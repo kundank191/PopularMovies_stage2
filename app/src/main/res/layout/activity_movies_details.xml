@@ -147,6 +147,7 @@
 
 </LinearLayout>
                         <TextView
+                            android:text="@string/release_date"
                             android:textColor="@color/colorPrimary"
                             android:textSize="18sp"
                             android:textStyle="bold"
