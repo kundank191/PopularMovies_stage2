@@ -286,6 +286,7 @@ public class MainActivity extends AppCompatActivity
         intent.putExtra("descr",movieResults.get(position).getOverview());
         intent.putExtra("ratings",movieResults.get(position).getVoteAverage().toString());
         intent.putExtra("releasedate",movieResults.get(position).getReleaseDate());
+        intent.putExtra("movieid",movieResults.get(position).getId().toString());
 
 
 

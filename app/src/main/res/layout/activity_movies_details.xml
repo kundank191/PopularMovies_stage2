@@ -47,11 +47,12 @@
     </android.support.design.widget.AppBarLayout>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/btn_cart"
+        android:id="@+id/fav_btn"
         android:src="@drawable/ic_favorite_border_black_24dp"
         app:backgroundTint="@android:color/white"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:clickable="true"
         app:elevation="6dp"
         app:pressedTranslationZ="12dp"
         app:layout_anchor="@id/app_bar_layout"
@@ -200,6 +201,14 @@
 
 
             </android.support.v7.widget.CardView>
+            <TextView
+                android:text="@string/trailerLabel"
+                android:textSize="15sp"
+                android:textAlignment="center"
+                android:textStyle="italic"
+                android:textColor="@android:color/black"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 <android.support.v7.widget.CardView
     android:elevation="5dp"
     app:cardUseCompatPadding="true"
@@ -213,7 +222,27 @@
 
     </android.support.v7.widget.RecyclerView>
 </android.support.v7.widget.CardView>
+            <TextView
+                android:text="@string/reviewsLabel"
+                android:textSize="15sp"
+                android:textAlignment="center"
+                android:textStyle="italic"
+                android:textColor="@android:color/black"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <android.support.v7.widget.CardView
+                android:elevation="5dp"
+                app:cardUseCompatPadding="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recyclerviewreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                </android.support.v7.widget.RecyclerView>
+            </android.support.v7.widget.CardView>
         </LinearLayout>
 
 

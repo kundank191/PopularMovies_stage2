@@ -1,6 +1,7 @@
 package com.example.wahdat.popularmovies2.MoviesApi;
 
 import com.example.wahdat.popularmovies2.Model.Model;
+import com.example.wahdat.popularmovies2.Model.Review;
 import com.example.wahdat.popularmovies2.Model.Trailer;
 
 import retrofit2.Call;
@@ -24,6 +25,8 @@ public class MoviesApi {
         Call<Model> getTopRatedMovies(@Query("api_key") String KEY);
         @GET("{movie_id}/videos")
         Call<Trailer> getTrailer (@Path("movie_id") String movieId, @Query("api_key") String apiKey);
+        @GET("{movie_id}/reviews")
+        Call<Review> getReview(@Path("movie_id")String movieId, @Query("api_key") String apiKey);
 
 
     }

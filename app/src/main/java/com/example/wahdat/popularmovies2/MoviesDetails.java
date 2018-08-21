@@ -1,22 +1,33 @@
 package com.example.wahdat.popularmovies2;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.wahdat.popularmovies2.Adapter.ReviewAdapter;
 import com.example.wahdat.popularmovies2.Adapter.TrailerAdapter;
+import com.example.wahdat.popularmovies2.Database.AppDatabase;
+import com.example.wahdat.popularmovies2.Database.FavouritesModal;
 import com.example.wahdat.popularmovies2.Model.Result;
+import com.example.wahdat.popularmovies2.Model.ResultReview;
 import com.example.wahdat.popularmovies2.Model.ResultTrailer;
+import com.example.wahdat.popularmovies2.Model.Review;
 import com.example.wahdat.popularmovies2.Model.Trailer;
 import com.example.wahdat.popularmovies2.MoviesApi.MoviesApi;
+import com.example.wahdat.popularmovies2.utils.AppExecutors;
 import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
@@ -34,6 +45,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static com.example.wahdat.popularmovies2.R.drawable.ic_favorite_black_24dp;
+
 public class MoviesDetails extends AppCompatActivity {
     @BindView(R.id.rootLayout) CoordinatorLayout coordinatorLayout;
     @BindView(R.id.collapsing) CollapsingToolbarLayout collapsingToolbarLayout;
@@ -45,16 +58,17 @@ public class MoviesDetails extends AppCompatActivity {
     @BindView(R.id.poster) ImageView circlebackdrop;
     @BindView(R.id.toolbar) Toolbar toolbar;
     @BindView(R.id.recyclerviewtrailer) RecyclerView recyclerViewtrailer;
+    @BindView(R.id.recyclerviewreview) RecyclerView recyclerViewReview;
+    @BindView(R.id.fav_btn) FloatingActionButton favbtn;
 
 
 
 
-    private Result movieresultobj;
-    private Trailer trailermodel;
-    //public List<ResultTrailer> trailerList;
     RecyclerView.LayoutManager layoutManager;
     String API_KEY="90787843a200cfbfd55b14b39270f6a1";
 
+    boolean isFavourite ;
+    private AppDatabase mdb;
 
 
     @Override
@@ -67,8 +81,9 @@ public class MoviesDetails extends AppCompatActivity {
         collapsingToolbarLayout.setCollapsedTitleTextAppearance(R.style.CollapsedAppbar);
 
         setSupportActionBar(toolbar);
-movieresultobj=new Result();
 
+//initialize mdb
+        mdb= AppDatabase.getInstance(getApplicationContext());
 //this line shows back button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -83,6 +98,15 @@ movieresultobj=new Result();
         String description=intent.getStringExtra("descr");
         String release=intent.getStringExtra("releasedate");
         String average=intent.getStringExtra("ratings");
+
+
+      final   FavouritesModal favouritesModal=new FavouritesModal(average,imagename,image,description,release);
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                mdb.moviesDao().insertFavMovie(favouritesModal);
+            }
+        });
 
 
         Picasso.get().load(BASE_URL+size+image).placeholder(R.drawable.imageload)
@@ -104,14 +128,87 @@ movieresultobj=new Result();
        ratings.setText(average);
         Picasso.get().load(BASE_URL+size+image).into(circlebackdrop);
 
-        //trailerAdapter=new TrailerAdapter(this);
+
+
+        layoutManagerTrailers();
+        loadTrailers();
+        layoutManagerReview();
+        loadReviews();
+
+
+        //favourite btn
+        favbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (isFavourite){
+
+                    isFavourite=false;
+                    favbtn.setImageDrawable(ContextCompat.getDrawable(MoviesDetails.this, R.drawable.ic_favorite_border_black_24dp));
+                    //favbtn.setBackgroundResource(R.drawable.ic_favorite_border_black_24dp);
+                    Toast.makeText(MoviesDetails.this, "Removed from favourites", Toast.LENGTH_SHORT).show();
+                }
+                else  {
+
+
+                    isFavourite=true;
+                    addmoviestofavouritelist();
+                    favbtn.setImageDrawable(ContextCompat.getDrawable(MoviesDetails.this, R.drawable.ic_favorite_red_24dp));
+                    Toast.makeText(MoviesDetails.this, "Added to favurites", Toast.LENGTH_SHORT).show();
+
+                }
+            }
+        });
+    }
+
+    private void addmoviestofavouritelist() {
+
+    }
+
+    private void loadReviews() {
+        Intent intent=getIntent();
+      String movieId = intent.getStringExtra("movieid");
+      Retrofit retrofit=new Retrofit.Builder()
+              .baseUrl(MoviesApi.Api.BASE_URL)
+              .addConverterFactory(GsonConverterFactory.create())
+              .build();
+      MoviesApi.Api api= retrofit.create(MoviesApi.Api.class);
+      Call<Review> call=api.getReview(movieId,API_KEY);
+      call.enqueue(new Callback<Review>() {
+          @Override
+          public void onResponse(Call<Review> call, Response<Review> response) {
+              if (response.body() !=null){
+
+                  assert response.body() != null;
+                  List<ResultReview> resultReviews= response.body().getResults();
+                  recyclerViewReview.setHasFixedSize(true);
+                  recyclerViewReview.setAdapter(new ReviewAdapter(resultReviews,getApplicationContext()));
+
+              }
+              else {
+                  Toast.makeText(MoviesDetails.this, "null pointer is here", Toast.LENGTH_SHORT).show();
+              }
+          }
+
+          @Override
+          public void onFailure(Call<Review> call, Throwable t) {
+
+          }
+      });
+    }
+
+    private void layoutManagerReview(){
+        layoutManager=new LinearLayoutManager(this);
+        recyclerViewReview.setLayoutManager(layoutManager);
+    }
+    private void layoutManagerTrailers() {
         layoutManager=new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
         recyclerViewtrailer.setLayoutManager(layoutManager);
-       // trailerAdapter=new TrailerAdapter(trailerList,this);
-        loadTrailers();
     }
 
     private void loadTrailers() {
+        Intent intent=getIntent();
+        String movieId=intent.getStringExtra("movieid");
         // Creating a retrofit object
         Retrofit retrofit=new Retrofit.Builder()
                 .baseUrl(MoviesApi.Api.BASE_URL)
@@ -120,15 +217,23 @@ movieresultobj=new Result();
         //Creating the Api interface
         MoviesApi.Api api=retrofit.create(MoviesApi.Api.class);
         //now making the call object
-        Call<Trailer> call=api.getTrailer(String.valueOf(movieresultobj.getId()),API_KEY);
+        Call<Trailer> call=api.getTrailer(movieId,API_KEY);
         call.enqueue(new Callback<Trailer>() {
             @Override
-            public void onResponse(Call<Trailer> call, Response<Trailer> response) {
-                List<ResultTrailer> trailerList=response.body().getResults();
+            public void onResponse(Call<Trailer> call, @NonNull Response<Trailer> response) {
+                if (response.body() !=null){
+                    assert response.body() != null;
 
-             recyclerViewtrailer.setHasFixedSize(true);
-                recyclerViewtrailer.setAdapter(new TrailerAdapter(trailerList,getApplicationContext()));
-            }
+                    List<ResultTrailer> trailerList=response.body().getResults();
+
+                    recyclerViewtrailer.setHasFixedSize(true);
+                    recyclerViewtrailer.setAdapter(new TrailerAdapter(trailerList,getApplicationContext()));
+
+                }
+                else {
+                    Toast.makeText(MoviesDetails.this, "null pointer is here", Toast.LENGTH_SHORT).show();
+                }
+                }
 
             @Override
             public void onFailure(Call<Trailer> call, Throwable t) {
@@ -137,7 +242,7 @@ movieresultobj=new Result();
         });
 
 
-///
+
     }
 
 
