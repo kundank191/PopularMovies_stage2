@@ -72,6 +72,7 @@ public class MoviesDetails extends AppCompatActivity {
     private AppDatabase mdb;
     FavouritesModal favouritesModal;
     private static int position;
+    List<FavouritesModal> favouriteList;
 
 
     @Override
@@ -135,6 +136,7 @@ public class MoviesDetails extends AppCompatActivity {
         loadTrailers();
         layoutManagerReview();
         loadReviews();
+
 
 
 
@@ -205,6 +207,7 @@ public class MoviesDetails extends AppCompatActivity {
         });
     }
 
+
     private void addmoviestofavouritelist() {
 
         Intent intent=getIntent();
@@ -218,7 +221,7 @@ public class MoviesDetails extends AppCompatActivity {
         String average=intent.getStringExtra("ratings");
 
         final  FavouritesModal favouritesModal=new FavouritesModal(movieid,average,imagename,image,description,release,true);
-        
+
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
