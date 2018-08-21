@@ -36,6 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -69,6 +70,8 @@ public class MoviesDetails extends AppCompatActivity {
 
     boolean isFavourite ;
     private AppDatabase mdb;
+    FavouritesModal favouritesModal;
+    private static int position;
 
 
     @Override
@@ -89,10 +92,12 @@ public class MoviesDetails extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
 
+
         Intent intent=getIntent();
         String BASE_URL="http://image.tmdb.org/t/p/";
         String size= "w780/";
        String image= intent.getStringExtra("imageUrl");
+
 
         String imagename= intent.getStringExtra("imagename");
         String description=intent.getStringExtra("descr");
@@ -100,14 +105,10 @@ public class MoviesDetails extends AppCompatActivity {
         String average=intent.getStringExtra("ratings");
 
 
-      final   FavouritesModal favouritesModal=new FavouritesModal(average,imagename,image,description,release);
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                mdb.moviesDao().insertFavMovie(favouritesModal);
-            }
-        });
 
+
+
+       
 
         Picasso.get().load(BASE_URL+size+image).placeholder(R.drawable.imageload)
                 .into(backdrop);
@@ -136,6 +137,7 @@ public class MoviesDetails extends AppCompatActivity {
         loadReviews();
 
 
+
         //favourite btn
         favbtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,26 +145,94 @@ public class MoviesDetails extends AppCompatActivity {
 
                 if (isFavourite){
 
-                    isFavourite=false;
+                    removeMovieFromList();
+                   isFavourite=false;
+
                     favbtn.setImageDrawable(ContextCompat.getDrawable(MoviesDetails.this, R.drawable.ic_favorite_border_black_24dp));
-                    //favbtn.setBackgroundResource(R.drawable.ic_favorite_border_black_24dp);
+
                     Toast.makeText(MoviesDetails.this, "Removed from favourites", Toast.LENGTH_SHORT).show();
                 }
                 else  {
 
 
-                    isFavourite=true;
+
+
                     addmoviestofavouritelist();
+
+
+                   isFavourite=true;
                     favbtn.setImageDrawable(ContextCompat.getDrawable(MoviesDetails.this, R.drawable.ic_favorite_red_24dp));
                     Toast.makeText(MoviesDetails.this, "Added to favurites", Toast.LENGTH_SHORT).show();
 
                 }
+
+
+            }
+        });
+    }
+
+    private void setRightDrawable() {
+        for (int i=0;i<mdb.moviesDao().getAllMovies().size(); i++){
+            if (Objects.equals(favouritesModal.getId(),mdb.moviesDao().getAllMovies().get(i).getId())){
+                position=i;
+                break;
+            }
+            else {
+                position=-1;
+            }
+
+        }
+        if (position>=0){
+            favbtn.setImageResource(R.drawable.ic_favorite_red_24dp);
+        }
+        else {
+            favbtn.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+        }
+    }
+
+    private void removeMovieFromList() {
+        Intent intent=getIntent();
+
+        final String movieid=intent.getStringExtra("movieid");
+
+
+
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                mdb.moviesDao().deleteFavMovie(movieid);
             }
         });
     }
 
     private void addmoviestofavouritelist() {
 
+        Intent intent=getIntent();
+        String BASE_URL="http://image.tmdb.org/t/p/";
+        String size= "w780/";
+        String image= intent.getStringExtra("imageUrl");
+        String movieid=intent.getStringExtra("movieid");
+        String imagename= intent.getStringExtra("imagename");
+        String description=intent.getStringExtra("descr");
+        String release=intent.getStringExtra("releasedate");
+        String average=intent.getStringExtra("ratings");
+
+        final  FavouritesModal favouritesModal=new FavouritesModal(movieid,average,imagename,image,description,release,true);
+        
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (favouritesModal.isFavourite()){
+                    mdb.moviesDao().insertFavMovie(favouritesModal);
+
+                    isFavourite=true;
+
+
+                }
+
+
+            }
+        });
     }
 
     private void loadReviews() {
@@ -228,6 +298,7 @@ public class MoviesDetails extends AppCompatActivity {
 
                     recyclerViewtrailer.setHasFixedSize(true);
                     recyclerViewtrailer.setAdapter(new TrailerAdapter(trailerList,getApplicationContext()));
+
 
                 }
                 else {

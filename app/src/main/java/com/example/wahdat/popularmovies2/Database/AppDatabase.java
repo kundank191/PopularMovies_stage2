@@ -6,7 +6,7 @@ import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 import android.util.Log;
 
-@Database(entities = {FavouritesModal.class}, version = 1,exportSchema = false)
+@Database(entities = {FavouritesModal.class}, version =1 ,exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static final Object LOCK=new Object();
@@ -19,6 +19,7 @@ public abstract class AppDatabase extends RoomDatabase {
                 Log.d("databasee", "creating new Databse");
                 sInstance= Room.databaseBuilder(context.getApplicationContext(),
                                                       AppDatabase.class,AppDatabase.DATABASE_NAME)
+
                         .build();
             }
         }

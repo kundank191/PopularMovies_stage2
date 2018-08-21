@@ -14,7 +14,7 @@ import java.util.List;
 public class FavouritesModal {
 
 
-    public FavouritesModal(int id, Integer movieid, String posterPath, String originalTitle, String backdropPath, String overview, String releaseDate) {
+    public FavouritesModal(int id, String movieid, String posterPath, String originalTitle, String backdropPath, String overview, String releaseDate, boolean favourite) {
         this.id = id;
         this.movieid = movieid;
         this.posterPath = posterPath;
@@ -22,16 +22,21 @@ public class FavouritesModal {
         this.backdropPath = backdropPath;
         this.overview = overview;
         this.releaseDate = releaseDate;
+        this.favourite=favourite;
+
     }
 
     @Ignore
-    public FavouritesModal(String voteAverage, String originalTitle, String backdropPath, String overview, String releaseDate) {
+    public FavouritesModal(String movieid,String voteAverage, String originalTitle, String backdropPath, String overview, String releaseDate,boolean favourite) {
+        this.movieid=movieid;
         this.voteAverage = voteAverage;
 
         this.originalTitle = originalTitle;
         this.backdropPath = backdropPath;
         this.overview = overview;
         this.releaseDate = releaseDate;
+        this.favourite=favourite;
+
     }
 
     @PrimaryKey(autoGenerate = true)
@@ -39,7 +44,7 @@ public class FavouritesModal {
 
 
     @ColumnInfo(name = "movie_id")
-    private Integer movieid;
+    private String movieid;
 
 
     @ColumnInfo(name = "vote")
@@ -57,6 +62,15 @@ public class FavouritesModal {
     private String overview;
 
     private String releaseDate;
+    private boolean favourite;
+
+    public boolean isFavourite() {
+        return favourite;
+    }
+
+    public void setFavourite(boolean favourite) {
+        this.favourite = favourite;
+    }
 
     public int getId() {
         return id;
@@ -66,12 +80,12 @@ public class FavouritesModal {
         this.id = id;
     }
 
-    public void setMovieid(Integer movieid) {
+    public void setMovieid(String movieid) {
         this.movieid = movieid;
     }
 
 
-    public Integer getMovieid() {
+    public String getMovieid() {
         return movieid;
     }
 
