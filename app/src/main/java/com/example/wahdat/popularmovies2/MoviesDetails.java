@@ -71,8 +71,7 @@ public class MoviesDetails extends AppCompatActivity {
     boolean isFavourite ;
     private AppDatabase mdb;
     FavouritesModal favouritesModal;
-    private static int position;
-    List<FavouritesModal> favouriteList;
+
 
 
     @Override
@@ -132,6 +131,7 @@ public class MoviesDetails extends AppCompatActivity {
 
 
 
+
         layoutManagerTrailers();
         loadTrailers();
         layoutManagerReview();
@@ -173,24 +173,7 @@ public class MoviesDetails extends AppCompatActivity {
         });
     }
 
-    private void setRightDrawable() {
-        for (int i=0;i<mdb.moviesDao().getAllMovies().size(); i++){
-            if (Objects.equals(favouritesModal.getId(),mdb.moviesDao().getAllMovies().get(i).getId())){
-                position=i;
-                break;
-            }
-            else {
-                position=-1;
-            }
 
-        }
-        if (position>=0){
-            favbtn.setImageResource(R.drawable.ic_favorite_red_24dp);
-        }
-        else {
-            favbtn.setImageResource(R.drawable.ic_favorite_border_black_24dp);
-        }
-    }
 
     private void removeMovieFromList() {
         Intent intent=getIntent();
@@ -229,6 +212,7 @@ public class MoviesDetails extends AppCompatActivity {
                     mdb.moviesDao().insertFavMovie(favouritesModal);
 
                     isFavourite=true;
+
 
 
                 }
